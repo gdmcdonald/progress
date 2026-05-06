@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Task Progress</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.classless.min.css">
+</head>
+<body>
+  <main>
+    <h2>Task Progress</h2>
+
+    <progress id="bar" value="0" max="100"></progress>
+    <p id="pct-label">—</p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+      <div>
+        <label for="done">Done</label>
+        <input type="number" id="done" min="0" placeholder="e.g. 23">
+      </div>
+      <div>
+        <label for="total">Total</label>
+        <input type="number" id="total" min="0" placeholder="e.g. 85">
+      </div>
+    </div>
+
+    <button id="btn-inc">+1</button>
+    <button id="btn-reset" class="secondary outline">Reset</button>
+  </main>
+
+  <script>
+    const $ = id => document.getElementById(id);
+
+    function render(done, total) {
+      const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+      $('bar').value = pct;
+      $('pct-label').textContent = total > 0
+        ? `${done} of ${total} done — ${pct}% (${total - done} remaining)`
+        : '—';
+    }
+
+    function save() {
+      const done  = Math.max(0, +$('done').value  || 0);
+      const total = Math.max(0, +$('total').value || 0);
+      localStorage.setItem('done', done);
+      localStorage.setItem('total', total);
+      render(done, total);
+    }
+
+    ['done', 'total'].forEach(id => $(id).addEventListener('input', save));
+
+    $('btn-inc').addEventListener('click', () => {
+      $('done').value = (+$('done').value || 0) + 1;
+      save();
+    });
+
+    $('btn-reset').addEventListener('click', () => {
+      localStorage.clear();
+      $('done').value = $('total').value = '';
+      render(0, 0);
+    });
+
+    // restore saved state
+    const d = +localStorage.getItem('done')  || 0;
+    const t = +localStorage.getItem('total') || 0;
+    if (d || t) { $('done').value = d; $('total').value = t; render(d, t); }
+  </script>
+</body>
+</html>
